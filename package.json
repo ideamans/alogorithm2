@@ -1,7 +1,7 @@
 {
   "name": "alogorithm2",
   "description": "ideaman's Inc logo mark generator v2.",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "type": "module",
   "typings": "build/index.d.ts",
   "module": "build/index.js",
