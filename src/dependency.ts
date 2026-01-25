@@ -35,7 +35,7 @@ export class Dependency implements DependencyInterface {
 
     this.defaults = {
       seed: process.env.DEFAULT_SEED || 'alogorithm2',
-      serverPort: Number(process.env.PORT || '3000'),
+      serverPort: Number(process.env.PORT || '3001'),
       serverHost: process.env.HOST || '0.0.0.0',
     }
 
@@ -46,7 +46,7 @@ export class Dependency implements DependencyInterface {
       font: process.env.LOGO_FONT || 'IBMPlexSans-SemiBold.otf',
       darkFill: process.env.LOGO_DARK_FILL || '#ddd',
       darkStroke: process.env.LOGO_DARK_STROKE || '',
-      colorTheme: 'light',
+      colorTheme: 'auto',
     }
 
     this.markDefaults = {

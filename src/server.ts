@@ -3,10 +3,10 @@ import Sharp from 'sharp'
 import Svgson from 'svgson'
 
 import { Dependency } from './dependency.js'
-import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
+import { createIconSvgImage } from './icon.js'
 import { createInlineSvgImage } from './inline.js'
 import { createRectSvgImage } from './rect.js'
-import { createIconSvgImage } from './icon.js'
+import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
 
 interface ImageParams {
   format: string

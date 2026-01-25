@@ -1,9 +1,9 @@
 import Blobs2 from 'blobs/v2/index.js'
-import Trianglify from 'trianglify'
 import Svgson from 'svgson'
+import Trianglify from 'trianglify'
 
-import { DependencyInterface, SvgImage } from './types.js'
 import { scaleSvgPath } from './svg.js'
+import { DependencyInterface, SvgImage } from './types.js'
 
 export interface LogoSpec {
   seed: string

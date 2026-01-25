@@ -1,7 +1,8 @@
 import Svgson from 'svgson'
+
+import { createMarkSvgImage } from './mark.js'
 import { scaledTextSvg, textToSvg } from './text.js'
 import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
-import { createMarkSvgImage } from './mark.js'
 
 export interface RectSvgImageInput {
   seed: string
@@ -15,11 +16,15 @@ export async function createRectSvgImage(
   dep: Pick<DependencyInterface, 'logger' | 'markDefaults' | 'logoTextDefaults'>,
 ): Promise<SvgImage> {
   // Text
+  const isAuto = input.colorTheme === 'auto'
   const textSvg = await textToSvg({
     ...dep.logoTextDefaults,
     fill: input.colorTheme === 'dark' ? dep.logoTextDefaults.darkFill : dep.logoTextDefaults.fill,
     stroke: input.colorTheme === 'dark' ? dep.logoTextDefaults.darkStroke : dep.logoTextDefaults.stroke,
     fontSize: 20, // Text will be scaled later so any value is fine
+    autoMode: isAuto,
+    darkFill: dep.logoTextDefaults.darkFill,
+    darkStroke: dep.logoTextDefaults.darkStroke,
   })
 
   // Scale text

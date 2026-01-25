@@ -1,11 +1,11 @@
 import Path from 'path'
 
-import TextToSvg from 'text-to-svg'
-import Svgson from 'svgson'
 import { SVGPathData } from 'svg-pathdata'
+import Svgson from 'svgson'
+import TextToSvg from 'text-to-svg'
+import TextToSVG from 'text-to-svg'
 
 import { BoundingBox, getTextSvgBoundingBox } from './svg.js'
-import TextToSVG from 'text-to-svg'
 import { SvgImage } from './types.js'
 
 export interface TextSpec {
@@ -14,6 +14,10 @@ export interface TextSpec {
   fontSize: number
   fill: string
   stroke: string
+  // For auto color theme
+  autoMode?: boolean
+  darkFill?: string
+  darkStroke?: string
 }
 
 export interface TextSvg {
@@ -41,10 +45,16 @@ export async function textToSvg(spec: TextSpec): Promise<TextSvg> {
   })
   if (!textToSvg) throw new Error('Invalid font')
 
-  const attributes: { [key: string]: string } = { fill: spec.fill }
-  if (spec.stroke) attributes['stroke'] = spec.stroke
+  const attributes: { [key: string]: string } = {}
+  if (spec.autoMode) {
+    // Use class for auto mode - will be styled via CSS
+    attributes['class'] = 'logo-text'
+  } else {
+    attributes['fill'] = spec.fill
+    if (spec.stroke) attributes['stroke'] = spec.stroke
+  }
 
-  const svg = textToSvg.getSVG(spec.text, {
+  let svg = textToSvg.getSVG(spec.text, {
     x: 0,
     y: 0,
     fontSize: spec.fontSize,
@@ -52,6 +62,23 @@ export async function textToSvg(spec: TextSpec): Promise<TextSvg> {
     letterSpacing: -0.02,
     attributes,
   })
+
+  // Inject style block for auto mode
+  if (spec.autoMode) {
+    const lightFill = spec.fill
+    const lightStroke = spec.stroke || 'none'
+    const darkFill = spec.darkFill || '#ddd'
+    const darkStroke = spec.darkStroke || 'none'
+
+    const styleBlock = `<style>
+.logo-text { fill: ${lightFill}; stroke: ${lightStroke}; }
+@media (prefers-color-scheme: dark) {
+  .logo-text { fill: ${darkFill}; stroke: ${darkStroke}; }
+}
+</style>`
+    // Insert style after opening <svg> tag
+    svg = svg.replace(/<svg([^>]*)>/, `<svg$1>${styleBlock}`)
+  }
 
   const boundingBox = await getTextSvgBoundingBox(svg)
   const textSvg = { svg, boundingBox, width: boundingBox[2] - boundingBox[0], height: boundingBox[3] - boundingBox[1] }

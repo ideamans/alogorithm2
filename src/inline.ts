@@ -1,8 +1,8 @@
 import Svgson from 'svgson'
 
-import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
-import { scaledTextSvg, textToSvg } from './text.js'
 import { createMarkSvgImage } from './mark.js'
+import { scaledTextSvg, textToSvg } from './text.js'
+import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
 
 export interface InlineSvgImageInput {
   seed: string
@@ -17,11 +17,15 @@ export async function createInlineSvgImage(
   const paddingRatio = dep.inlineDefaults.paddingRatio
 
   // Text
+  const isAuto = input.colorTheme === 'auto'
   const textSvg = await textToSvg({
     ...dep.logoTextDefaults,
     fill: input.colorTheme === 'dark' ? dep.logoTextDefaults.darkFill : dep.logoTextDefaults.fill,
     stroke: input.colorTheme === 'dark' ? dep.logoTextDefaults.darkStroke : dep.logoTextDefaults.stroke,
     fontSize: 20, // Text will be scaled later so any value is fine
+    autoMode: isAuto,
+    darkFill: dep.logoTextDefaults.darkFill,
+    darkStroke: dep.logoTextDefaults.darkStroke,
   })
 
   // Calculate dimensions
