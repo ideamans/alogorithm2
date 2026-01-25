@@ -4,7 +4,7 @@ import Svgson from 'svgson'
 
 import { Dependency } from './dependency.js'
 import { createIconSvgImage } from './icon.js'
-import { createInlineSvgImage } from './inline.js'
+import { createInlineCustomSvgImage, createInlineSvgImage } from './inline.js'
 import { createRectSvgImage } from './rect.js'
 import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
 
@@ -18,6 +18,12 @@ interface CommonQuery {
 
 interface InlineQuery extends CommonQuery {
   width?: string
+  colorTheme?: ColorTheme
+}
+
+interface InlineCustomQuery extends CommonQuery {
+  text?: string
+  height?: string
   colorTheme?: ColorTheme
 }
 
@@ -86,6 +92,26 @@ export function createServer(dep: DependencyInterface) {
 
     return await safeReplySvgImageAs(svgImage, format, reply)
   })
+
+  server.get<{ Params: ImageParams; Querystring: InlineCustomQuery }>(
+    '/v2/inline-custom.:format',
+    async (request, reply) => {
+      const { format } = request.params
+      const { seed, text, height, colorTheme } = request.query
+
+      const svgImage = await createInlineCustomSvgImage(
+        {
+          seed: seed || dep.defaults.seed,
+          text: text || dep.logoTextDefaults.text,
+          height: Number(height || dep.inlineDefaults.width / 4), // Default height based on reasonable ratio
+          colorTheme: colorTheme || dep.logoTextDefaults.colorTheme,
+        },
+        dep,
+      )
+
+      return await safeReplySvgImageAs(svgImage, format, reply)
+    },
+  )
 
   server.get<{ Params: ImageParams; Querystring: RectQuery }>('/v2/rect.:format', async (request, reply) => {
     const { format } = request.params
