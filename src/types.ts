@@ -54,4 +54,4 @@ export interface SvgImage {
   height: number
 }
 
-export type ColorTheme = 'light' | 'dark'
+export type ColorTheme = 'light' | 'dark' | 'auto'

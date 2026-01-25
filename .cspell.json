@@ -3,10 +3,14 @@
   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/master/cspell.schema.json",
   "language": "en",
   "words": [
+    "alogorithm",
     "bbox",
     "Fastify",
+    "ideaman's",
+    "pathdata",
     "svgson",
-    "trianglify"
+    "trianglify",
+    "xlink"
   ],
   "flagWords": [],
   "ignorePaths": [

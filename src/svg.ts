@@ -1,6 +1,6 @@
-import Svgson from 'svgson'
-import { SVGPathData } from 'svg-pathdata'
 import { svgPathBbox } from 'svg-path-bbox'
+import { SVGPathData } from 'svg-pathdata'
+import Svgson from 'svgson'
 
 export type BoundingBox = [number, number, number, number]
 
