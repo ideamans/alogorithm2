@@ -36,6 +36,7 @@ interface RectQuery extends CommonQuery {
 interface IconQuery extends CommonQuery {
   width?: string
   height?: string
+  rounded?: string
 }
 
 export async function safeReplySvgImageAs(svgImage: SvgImage, format: string, reply: FastifyReply) {
@@ -132,13 +133,14 @@ export function createServer(dep: DependencyInterface) {
 
   server.get<{ Params: ImageParams; Querystring: IconQuery }>('/v2/icon.:format', async (request, reply) => {
     const { format } = request.params
-    const { seed, width, height } = request.query
+    const { seed, width, height, rounded } = request.query
 
     const svgImage = await createIconSvgImage(
       {
         seed: seed || dep.defaults.seed,
         width: Number(width || dep.iconDefaults.size),
         height: Number(height || width || dep.iconDefaults.size),
+        rounded: rounded ? Number(rounded) : 0,
       },
       dep,
     )
