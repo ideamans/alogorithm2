@@ -5,6 +5,7 @@ import Svgson from 'svgson'
 import { Dependency } from './dependency.js'
 import { createIconSvgImage } from './icon.js'
 import { createInlineCustomSvgImage, createInlineSvgImage } from './inline.js'
+import { createNeuralMarkSvgImage } from './neural.js'
 import { createRectSvgImage } from './rect.js'
 import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
 
@@ -141,6 +142,22 @@ export function createServer(dep: DependencyInterface) {
         width: Number(width || dep.iconDefaults.size),
         height: Number(height || width || dep.iconDefaults.size),
         circle: circle === '1',
+      },
+      dep,
+    )
+
+    return await safeReplySvgImageAs(svgImage, format, reply)
+  })
+
+  server.get<{ Params: ImageParams; Querystring: IconQuery }>('/v2/neural.:format', async (request, reply) => {
+    const { format } = request.params
+    const { seed, width, height } = request.query
+
+    const svgImage = await createNeuralMarkSvgImage(
+      {
+        seed: seed || dep.defaults.seed,
+        width: Number(width || dep.iconDefaults.size),
+        height: Number(height || width || dep.iconDefaults.size),
       },
       dep,
     )
