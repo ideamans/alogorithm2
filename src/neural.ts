@@ -1,9 +1,7 @@
 import Svgson from 'svgson'
 import Trianglify from 'trianglify'
 
-import { scaleSvgPath } from './svg.js'
 import { DependencyInterface, SvgImage } from './types.js'
-import Blobs2 from 'blobs/v2/index.js'
 
 export interface NeuralSpec {
   seed: string
@@ -112,8 +110,8 @@ export async function createNeuralMarkSvgImage(
 
   // Seeded PRNG for deterministic random sizes
   const rng = createSeededRandom(seed)
-  const minStroke = spec.width * 0.003
-  const maxStroke = spec.width * 0.012
+  const minStroke = spec.width * 0.006
+  const maxStroke = spec.width * 0.024
 
   // Build triangle fill elements (10% opacity)
   const fillElements: Svgson.INode[] = []
@@ -171,9 +169,8 @@ export async function createNeuralMarkSvgImage(
     }
   }
 
-  // Build vertex circles with deterministic random sizes
-  const minRadius = spec.width * 0.02
-  const maxRadius = spec.width * 0.06
+  // Build vertex circles
+  const circleRadius = 14
 
   const circleElements: Svgson.INode[] = []
   for (const [, vertex] of vertexColors) {
@@ -193,7 +190,7 @@ export async function createNeuralMarkSvgImage(
     const avgB = Math.round(bSum / n)
     const avgColor = `rgb(${avgR},${avgG},${avgB})`
 
-    const radius = minRadius + rng() * (maxRadius - minRadius)
+    const radius = circleRadius
 
     circleElements.push({
       name: 'circle',
@@ -209,17 +206,11 @@ export async function createNeuralMarkSvgImage(
     })
   }
 
-  // Blob clipping path
-  const blobPath = Blobs2.svgPath({
-    seed,
-    extraPoints: dep.markDefaults.extraPoints,
-    randomness: dep.markDefaults.randomness,
-    size: 256,
-  })
-  const scaledBlobPath = scaleSvgPath(blobPath, spec.width, spec.height)
-
   const intWidth = Math.ceil(spec.width)
   const intHeight = Math.ceil(spec.height)
+  const cx = intWidth / 2
+  const cy = intHeight / 2
+  const r = Math.min(intWidth, intHeight) / 2
 
   const markSvg: Svgson.INode = {
     name: 'svg',
@@ -242,28 +233,26 @@ export async function createNeuralMarkSvgImage(
           {
             name: 'clipPath',
             type: 'element',
-            attributes: { id: 'clip' },
+            attributes: { id: 'clip-circle' },
+            value: '',
             children: [
               {
-                name: 'path',
+                name: 'circle',
                 type: 'element',
-                attributes: { d: scaledBlobPath },
+                attributes: { cx: `${cx}`, cy: `${cy}`, r: `${r}` },
                 value: '',
                 children: [],
               },
             ],
-            value: '',
           },
         ],
       },
       {
         name: 'g',
         type: 'element',
-        attributes: {
-          'clip-path': 'url(#clip)',
-        },
+        attributes: { 'clip-path': 'url(#clip-circle)' },
         value: '',
-        children: [...fillElements, ...edgeElements, ...circleElements],
+        children: [...edgeElements, ...circleElements],
       },
     ],
   }
