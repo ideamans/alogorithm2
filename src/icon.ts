@@ -26,5 +26,6 @@ export async function createIconSvgImage(
     svgNode,
     width,
     height,
+    seed: input.seed,
   }
 }

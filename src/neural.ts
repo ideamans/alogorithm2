@@ -224,6 +224,7 @@ export async function createNeuralMarkSvgImage(
     },
     value: '',
     children: [
+      { name: 'title', type: 'element', value: '', attributes: {}, children: [{ name: '', type: 'text', value: spec.seed, attributes: {}, children: [] }] },
       {
         name: 'defs',
         type: 'element',
@@ -261,5 +262,6 @@ export async function createNeuralMarkSvgImage(
     svgNode: markSvg,
     width: intWidth,
     height: intHeight,
+    seed: spec.seed,
   }
 }

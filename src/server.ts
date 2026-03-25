@@ -1,3 +1,5 @@
+import { crc32 } from 'node:zlib'
+
 import Fastify, { FastifyReply } from 'fastify'
 import Sharp from 'sharp'
 import Svgson from 'svgson'
@@ -40,6 +42,27 @@ interface IconQuery extends CommonQuery {
   circle?: string
 }
 
+// Insert a PNG tEXt chunk (keyword + text) right after the IHDR chunk
+function insertPngTextChunk(png: Buffer, keyword: string, text: string): Buffer {
+  const keyBuf = Buffer.from(keyword, 'latin1')
+  const nul = Buffer.from([0])
+  const textBuf = Buffer.from(text, 'latin1')
+  const chunkData = Buffer.concat([keyBuf, nul, textBuf])
+
+  const length = Buffer.alloc(4)
+  length.writeUInt32BE(chunkData.length, 0)
+
+  const type = Buffer.from('tEXt', 'ascii')
+  const crc = Buffer.alloc(4)
+  crc.writeUInt32BE(crc32(Buffer.concat([type, chunkData])) >>> 0, 0)
+
+  const chunk = Buffer.concat([length, type, chunkData, crc])
+
+  // PNG: 8-byte signature + IHDR chunk (4 len + 4 type + 13 data + 4 crc = 25 bytes)
+  const insertAt = 8 + 25
+  return Buffer.concat([png.subarray(0, insertAt), chunk, png.subarray(insertAt)])
+}
+
 export async function safeReplySvgImageAs(svgImage: SvgImage, format: string, reply: FastifyReply) {
   try {
     const svg = Svgson.stringify(svgImage.svgNode)
@@ -54,10 +77,14 @@ export async function safeReplySvgImageAs(svgImage: SvgImage, format: string, re
         },
       })
 
-      const png = await sharp
+      let png = await sharp
         .composite([{ input: Buffer.from(svg) }])
         .png()
         .toBuffer()
+
+      if (svgImage.seed) {
+        png = insertPngTextChunk(png, 'Seed', svgImage.seed)
+      }
 
       reply.header('Content-Type', 'image/png')
       reply.send(png)
