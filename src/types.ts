@@ -52,6 +52,7 @@ export interface SvgImage {
   svgNode: Svgson.INode
   width: number
   height: number
+  seed?: string
 }
 
 export type ColorTheme = 'light' | 'dark' | 'auto'
