@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import { crc32 } from 'node:zlib'
 
 import Fastify, { FastifyReply } from 'fastify'
@@ -103,7 +104,14 @@ export async function safeReplySvgImageAs(svgImage: SvgImage, format: string, re
 }
 
 export function createServer(dep: DependencyInterface) {
+  const require = createRequire(import.meta.url)
+  const { version } = require('../package.json') as { version: string }
+
   const server = Fastify()
+
+  server.addHook('onSend', async (_request, reply) => {
+    reply.header('X-App-Version', version)
+  })
 
   server.get<{ Params: ImageParams; Querystring: InlineQuery }>('/v2/inline.:format', async (request, reply) => {
     const { format } = request.params

@@ -64,7 +64,6 @@ export async function createInlineSvgImage(
       viewBox: `0 0 ${intWidth} ${intHeight}`,
     },
     children: [
-      { name: 'title', type: 'element', value: '', attributes: {}, children: [{ name: '', type: 'text', value: input.seed, attributes: {}, children: [] }] },
       ...mark.svgNode.children,
       {
         name: 'g',
@@ -130,7 +129,6 @@ export async function createInlineCustomSvgImage(
       viewBox: `0 0 ${intWidth} ${intHeight}`,
     },
     children: [
-      { name: 'title', type: 'element', value: '', attributes: {}, children: [{ name: '', type: 'text', value: input.seed, attributes: {}, children: [] }] },
       ...mark.svgNode.children,
       {
         name: 'g',
