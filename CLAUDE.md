@@ -106,3 +106,10 @@ All defaults are configurable via environment variables:
 - Tests use AVA (`ava` config in package.json, `workerThreads: false` because the native `canvas` module pulled in by trianglify cannot be loaded in multiple worker threads)
 - Build outputs to `build/` directory
 - Font files stored in `fonts/` directory
+### Dependency notes
+- `resolutions` in package.json forces `**/canvas/@mapbox/node-pre-gyp` to `^2.0.3`. trianglify depends on
+  `canvas@^2`, whose `@mapbox/node-pre-gyp@^1` pulls in the vulnerable `tar@6` (and `rimraf`/`glob@7`/old
+  `brace-expansion`). node-pre-gyp is only used at install time; canvas 2.11.2 has no prebuilt binary for
+  Node 22, so it is always built from source (`--fallback-to-build`, needs the cairo/pango packages in the
+  Dockerfile). Remove the resolution only if trianglify/canvas stop depending on node-pre-gyp 1.x.
+- sharp 0.35 requires Node.js >= 20.9.0. PNG output is pinned by `fixtures/golden/*.png` (pixel compare).
