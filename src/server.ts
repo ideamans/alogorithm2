@@ -77,7 +77,7 @@ export async function safeReplySvgImageAs(svgImage: SvgImage, format: string, re
         },
       })
 
-      let png = await sharp
+      let png: Buffer = await sharp
         .composite([{ input: Buffer.from(svg) }])
         .png()
         .toBuffer()

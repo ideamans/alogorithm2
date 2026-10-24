@@ -7,7 +7,7 @@
   "module": "build/index.js",
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.9.0"
   },
   "scripts": {
     "build": "tsc",
@@ -18,9 +18,11 @@
     "test:lint": "eslint src",
     "test:prettier": "prettier src --list-different",
     "test:cspell": "cspell \"{README.md,.github/*.md,src/**/*.ts}\"",
-    "test:unit": "nyc --silent ava",
-    "watch": "nyc --silent ava --watch",
-    "start": "run-s build && node build/start.js"
+    "test:unit": "ava",
+    "watch": "ava --watch",
+    "start": "run-s build && node build/start.js",
+    "golden:update": "run-s build && UPDATE_GOLDEN=1 ava",
+    "docker:smoke": "./scripts/docker-smoke.sh"
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
@@ -44,10 +46,10 @@
   },
   "dependencies": {
     "blobs": "^2.3.0-beta.2",
-    "fastify": "^5.0.0",
+    "fastify": "^5.12.7",
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
-    "sharp": "^0.33.5",
+    "sharp": "^0.35.5",
     "sort-json": "^2.0.1",
     "svg-path-bbox": "^2.1.0",
     "svg-pathdata": "^7.1.0",
@@ -59,5 +61,15 @@
     "singleQuote": true,
     "semi": false,
     "printWidth": 120
+  },
+  "ava": {
+    "files": [
+      "build/**/*.spec.js"
+    ],
+    "workerThreads": false,
+    "timeout": "2m"
+  },
+  "resolutions": {
+    "**/canvas/@mapbox/node-pre-gyp": "^2.0.3"
   }
 }
