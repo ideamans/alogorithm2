@@ -29,11 +29,23 @@ npm test
 npm run test:lint      # ESLint
 npm run test:prettier  # Prettier format check
 npm run test:cspell    # Spell check
-npm run test:unit      # Unit tests with nyc coverage
+npm run test:unit      # ava tests (build/spec/*.spec.js, compiled from src/spec/*.spec.ts)
 
 # Watch mode for tests
 npm run watch
+
+# Regenerate golden fixtures (fixtures/golden/) after an intentional output change
+npm run golden:update
+
+# Build the production Docker image, run the tests inside it and hit every endpoint over HTTP
+npm run docker:smoke
 ```
+
+Tests (`src/spec/`): unit tests for svg/text/layout modules, HTTP tests via `fastify.inject`,
+a real-server test that spawns `build/start.js`, and golden comparisons (SVG byte-exact,
+PNG pixel-wise with tolerance because sharp/libvips/librsvg upgrades may change antialiasing).
+Tests must run from the repository root (fonts and fixtures are resolved from cwd).
+`npm run build` must run before `test:unit` (the `test` script does this).
 
 ### Code Quality
 ```bash
@@ -91,6 +103,6 @@ All defaults are configurable via environment variables:
 - Strict TypeScript configuration with comprehensive type checking
 - ESLint with TypeScript rules, import ordering, and sorting
 - Prettier for code formatting
-- No test files found - unit tests likely use AVA framework based on package.json
+- Tests use AVA (`ava` config in package.json, `workerThreads: false` because the native `canvas` module pulled in by trianglify cannot be loaded in multiple worker threads)
 - Build outputs to `build/` directory
 - Font files stored in `fonts/` directory
