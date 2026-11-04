@@ -35,6 +35,8 @@ export class Dependency implements DependencyInterface {
 
     this.defaults = {
       seed: process.env.DEFAULT_SEED || 'alogorithm2',
+      // Follow the standard TZ variable (via Intl, which resolves it); fall back to Asia/Tokyo when unset
+      timeZone: process.env.TZ ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'Asia/Tokyo',
       serverPort: Number(process.env.PORT || '3001'),
       serverHost: process.env.HOST || '0.0.0.0',
     }

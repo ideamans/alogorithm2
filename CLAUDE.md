@@ -71,11 +71,19 @@ npm run fix:prettier   # Auto-format with Prettier
 
 ### Configuration
 All defaults are configurable via environment variables:
-- `DEFAULT_SEED`: Pattern seed (default: "alogorithm2")
+- `DEFAULT_SEED`: Pattern seed (default: "alogorithm2"). May contain seed variables
+- `TZ`: Standard time zone variable, also used to expand seed variables (default when unset: "Asia/Tokyo")
 - `PORT`: Server port (default: 3000)
 - `HOST`: Server host (default: "0.0.0.0")
 - `LOGO_TEXT`: Company name text
 - Various styling and layout parameters
+
+### Seed Variables
+`src/seed.ts` expands `{name}` placeholders in the seed before generation (`resolveSeed` in `server.ts`).
+- `{today}` → `YYYYMMDD` in the time zone from the `tz` query param, else `TZ`, else `Asia/Tokyo`
+- Unknown variables are left untouched; an invalid `tz` returns 400
+- The expanded value is what goes into the SVG `<title>` and the PNG `Seed` tEXt chunk
+- To add a variable, add an entry to the `variables` map in `expandSeedVariables`
 
 ### Logo Generation Process
 1. Generate triangular geometric pattern based on seed

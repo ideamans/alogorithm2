@@ -3,6 +3,7 @@ import Svgson from 'svgson'
 
 export interface Defaults {
   seed: string
+  timeZone: string
   serverPort: number
   serverHost: string
 }

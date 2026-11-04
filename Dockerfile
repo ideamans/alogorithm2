@@ -1,4 +1,4 @@
-FROM node:22.23.4
+FROM node:24.22.2
 
 ADD . /app
 WORKDIR /app
