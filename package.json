@@ -1,7 +1,7 @@
 {
   "name": "alogorithm2",
   "description": "ideaman's Inc logo mark generator v2.",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "type": "module",
   "typings": "build/index.d.ts",
   "module": "build/index.js",
@@ -18,8 +18,8 @@
     "test:lint": "eslint src",
     "test:prettier": "prettier src --list-different",
     "test:cspell": "cspell \"{README.md,.github/*.md,src/**/*.ts}\"",
-    "test:unit": "nyc --silent ava",
-    "watch": "nyc --silent ava --watch",
+    "test:unit": "c8 --reporter=text-summary ava",
+    "watch": "ava --watch",
     "start": "run-s build && node build/start.js"
   },
   "devDependencies": {
@@ -30,6 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^8.8.0",
     "@typescript-eslint/parser": "^8.8.0",
     "ava": "^6.4.1",
+    "c8": "^12.0.0",
     "cspell": "^8.14.4",
     "eslint": "^9.12.0",
     "eslint-config-prettier": "^9.1.0",
@@ -54,6 +55,13 @@
     "svgson": "^5.3.1",
     "text-to-svg": "^3.1.5",
     "trianglify": "^4.1.1"
+  },
+  "ava": {
+    "files": [
+      "build/**/*.spec.js"
+    ],
+    "snapshotDir": "src/snapshots",
+    "timeout": "60s"
   },
   "resolutions": {
     "canvas": "^3.2.3"

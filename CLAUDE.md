@@ -29,7 +29,7 @@ npm test
 npm run test:lint      # ESLint
 npm run test:prettier  # Prettier format check
 npm run test:cspell    # Spell check
-npm run test:unit      # Unit tests with nyc coverage
+npm run test:unit      # Unit tests (AVA) with c8 coverage
 
 # Watch mode for tests
 npm run watch
@@ -99,6 +99,12 @@ All defaults are configurable via environment variables:
 - Strict TypeScript configuration with comprehensive type checking
 - ESLint with TypeScript rules, import ordering, and sorting
 - Prettier for code formatting
-- No test files found - unit tests likely use AVA framework based on package.json
+- Unit tests: AVA, `src/*.spec.ts`. They run from the compiled `build/**/*.spec.js`, so build first (`npm test` does)
+  - `spec-helper.ts` has `createTestDependency()` (real defaults, silent logger), `svgDigest()` and `findNodes()`
+  - Server tests use Fastify `inject` (no port)
+  - Snapshots in `src/snapshots/` hold SVG digests per seed. They guard "the same seed always draws the same logo";
+    a failure after a dependency upgrade means logos changed. Update only on purpose: `npx ava --update-snapshots`
+- Requires Node 24 (Dockerfile pins `node:24.22.2`). `canvas` is forced to 3.x via `resolutions` because trianglify
+  pulls canvas 2, which does not build on Node 24. Only `toSVG()` is used, so canvas never affects the output
 - Build outputs to `build/` directory
 - Font files stored in `fonts/` directory
