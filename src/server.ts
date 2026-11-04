@@ -42,6 +42,8 @@ interface IconQuery extends CommonQuery {
   width?: string
   height?: string
   circle?: string
+  square?: string
+  radius?: string
 }
 
 // Insert a PNG tEXt chunk (keyword + text) right after the IHDR chunk
@@ -190,7 +192,7 @@ export function createServer(dep: DependencyInterface) {
 
   server.get<{ Params: ImageParams; Querystring: IconQuery }>('/v2/icon.:format', async (request, reply) => {
     const { format } = request.params
-    const { width, height, circle } = request.query
+    const { width, height, circle, square, radius } = request.query
 
     const svgImage = await createIconSvgImage(
       {
@@ -198,6 +200,8 @@ export function createServer(dep: DependencyInterface) {
         width: Number(width || dep.iconDefaults.size),
         height: Number(height || width || dep.iconDefaults.size),
         circle: circle === '1',
+        square: square === '1',
+        radius: Number(radius || 0) || 0,
       },
       dep,
     )

@@ -52,7 +52,7 @@ npm run fix:prettier   # Auto-format with Prettier
 - **Server** (`src/server.ts`): Fastify-based HTTP server with three main endpoints:
   - `/v2/inline.{svg|png}` - Horizontal logo with text beside mark
   - `/v2/rect.{svg|png}` - Vertical logo with text below mark  
-  - `/v2/icon.{svg|png}` - Icon-only version
+  - `/v2/icon.{svg|png}` - Icon-only version; `circle=1` clips to a circle, `square=1` to a square with `radius` (ratio of the shorter side, 0–0.5) as corner radius (`applyCircleClipping` / `applySquareClipping` in `svg.ts`)
 
 - **Logo Generation Pipeline**:
   1. `mark.ts` - Creates geometric patterns using Trianglify and clips them with blob shapes

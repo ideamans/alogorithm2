@@ -1,5 +1,5 @@
 import { createMarkSvgImage } from './mark.js'
-import { applyCircleClipping } from './svg.js'
+import { applyCircleClipping, applySquareClipping } from './svg.js'
 import { DependencyInterface, SvgImage } from './types.js'
 
 export interface IconSvgImageInput {
@@ -7,6 +7,8 @@ export interface IconSvgImageInput {
   width: number
   height: number
   circle?: boolean
+  square?: boolean
+  radius?: number
 }
 
 export async function createIconSvgImage(
@@ -20,6 +22,8 @@ export async function createIconSvgImage(
   let svgNode = mark.svgNode
   if (input.circle) {
     svgNode = applyCircleClipping(svgNode, width, height)
+  } else if (input.square) {
+    svgNode = applySquareClipping(svgNode, width, height, input.radius)
   }
 
   return {
