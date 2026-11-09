@@ -30,10 +30,24 @@ npm run test:lint      # ESLint
 npm run test:prettier  # Prettier format check
 npm run test:cspell    # Spell check
 npm run test:unit      # Unit tests (AVA) with c8 coverage
+npm run golden:update  # Regenerate fixtures/golden/* after an intended output change
+npm run docker:smoke   # Build the production image, run ava inside it, then hit every endpoint
 
 # Watch mode for tests
 npm run watch
+
+# Regenerate golden fixtures (fixtures/golden/) after an intentional output change
+npm run golden:update
+
+# Build the production Docker image, run the tests inside it and hit every endpoint over HTTP
+npm run docker:smoke
 ```
+
+Tests (`src/spec/`): unit tests for svg/text/layout modules, HTTP tests via `fastify.inject`,
+a real-server test that spawns `build/start.js`, and golden comparisons (SVG byte-exact,
+PNG pixel-wise with tolerance because sharp/libvips/librsvg upgrades may change antialiasing).
+Tests must run from the repository root (fonts and fixtures are resolved from cwd).
+`npm run build` must run before `test:unit` (the `test` script does this).
 
 ### Code Quality
 ```bash
@@ -106,5 +120,18 @@ All defaults are configurable via environment variables:
     a failure after a dependency upgrade means logos changed. Update only on purpose: `npx ava --update-snapshots`
 - Requires Node 24 (Dockerfile pins `node:24.22.2`). `canvas` is forced to 3.x via `resolutions` because trianglify
   pulls canvas 2, which does not build on Node 24. Only `toSVG()` is used, so canvas never affects the output
+- Tests also live in `src/spec/` (HTTP over `fastify.inject`, golden files in `fixtures/golden/`: SVG byte-equal,
+  PNG pixel-compared with a small tolerance). AVA runs with `workerThreads: false` because native modules
+  (canvas / sharp) misbehave when loaded in several worker threads
 - Build outputs to `build/` directory
 - Font files stored in `fonts/` directory
+
+### Dependency notes
+- sharp 0.35 requires Node.js >= 20.9.0. PNG output is pinned by `fixtures/golden/*.png` (pixel compare).
+- Other `resolutions` raise `glob` (ava / c8) to ^14.0.2 and `minimatch` (eslint / typescript-eslint / c8) to ^11.0.1:
+  the latest versions of those dev tools still pull vulnerable majors (moderate). Dev-only; remove when upstream moves on.
+- TypeScript stays at 6.0.x until typescript-eslint supports 7. TS 6 rejects `moduleResolution: node`, so `NodeNext` is used.
+- ESLint 10: `eslint-plugin-import` / `eslint-plugin-eslint-comments` are replaced by `eslint-plugin-import-x` /
+  `@eslint-community/eslint-plugin-eslint-comments` (same rule names).
+- CI: `test.yml` runs on pull requests (Node 24.22.2 and 26, plus `scripts/docker-smoke.sh`); `publish.yml` runs the tests
+  again on main and pushes the image tagged with `package.json` version, so bump the version with every change.
