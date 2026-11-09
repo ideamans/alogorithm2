@@ -1,7 +1,7 @@
 {
   "name": "alogorithm2",
   "description": "ideaman's Inc logo mark generator v2.",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "type": "module",
   "typings": "build/index.d.ts",
   "module": "build/index.js",
@@ -25,35 +25,35 @@
     "docker:smoke": "./scripts/docker-smoke.sh"
   },
   "devDependencies": {
-    "@types/node": "^22.7.5",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.8.1",
+    "@types/node": "^24",
     "@types/sort-json": "^2.0.3",
     "@types/text-to-svg": "^3.1.4",
     "@types/trianglify": "^4.1.2",
-    "@typescript-eslint/eslint-plugin": "^8.8.0",
-    "@typescript-eslint/parser": "^8.8.0",
-    "ava": "^6.4.1",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "ava": "^8.4.0",
     "c8": "^12.0.0",
-    "cspell": "^8.14.4",
-    "eslint": "^9.12.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-unused-imports": "^4.1.4",
+    "cspell": "^10.4.1",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.18.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.3.3",
+    "prettier": "^3.9.10",
     "standard-version": "^9.5.0",
-    "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "tsx": "^4.23.15",
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "blobs": "^2.3.0-beta.2",
-    "fastify": "^5.12.7",
-    "pino": "^9.4.0",
-    "pino-pretty": "^11.2.2",
+    "fastify": "^5.12.8",
+    "pino": "^10.4.0",
+    "pino-pretty": "^13.2.0",
     "sharp": "^0.35.5",
     "sort-json": "^2.0.1",
     "svg-path-bbox": "^2.1.0",
-    "svg-pathdata": "^7.1.0",
+    "svg-pathdata": "^9.0.0",
     "svgson": "^5.3.1",
     "text-to-svg": "^3.1.5",
     "trianglify": "^4.1.1"
@@ -67,7 +67,12 @@
     "workerThreads": false
   },
   "resolutions": {
-    "canvas": "^3.2.3"
+    "canvas": "^3.2.3",
+    "**/ava/**/glob": "^14.0.2",
+    "**/c8/**/glob": "^14.0.2",
+    "**/eslint/**/minimatch": "^11.0.1",
+    "**/@typescript-eslint/typescript-estree/minimatch": "^11.0.1",
+    "**/test-exclude/minimatch": "^11.0.1"
   },
   "prettier": {
     "singleQuote": true,

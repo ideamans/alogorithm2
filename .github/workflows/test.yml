@@ -1,0 +1,37 @@
+name: Test
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # 24 = the Docker image (node:24.22.2), 26 = current LTS
+        node-version: ['24.22.2', '26.x']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Test
+        run: npm test
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Builds the production Dockerfile, runs ava inside the image and requests every endpoint
+      - name: Docker smoke test
+        run: ./scripts/docker-smoke.sh

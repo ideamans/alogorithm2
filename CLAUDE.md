@@ -128,3 +128,10 @@ All defaults are configurable via environment variables:
 
 ### Dependency notes
 - sharp 0.35 requires Node.js >= 20.9.0. PNG output is pinned by `fixtures/golden/*.png` (pixel compare).
+- Other `resolutions` raise `glob` (ava / c8) to ^14.0.2 and `minimatch` (eslint / typescript-eslint / c8) to ^11.0.1:
+  the latest versions of those dev tools still pull vulnerable majors (moderate). Dev-only; remove when upstream moves on.
+- TypeScript stays at 6.0.x until typescript-eslint supports 7. TS 6 rejects `moduleResolution: node`, so `NodeNext` is used.
+- ESLint 10: `eslint-plugin-import` / `eslint-plugin-eslint-comments` are replaced by `eslint-plugin-import-x` /
+  `@eslint-community/eslint-plugin-eslint-comments` (same rule names).
+- CI: `test.yml` runs on pull requests (Node 24.22.2 and 26, plus `scripts/docker-smoke.sh`); `publish.yml` runs the tests
+  again on main and pushes the image tagged with `package.json` version, so bump the version with every change.
