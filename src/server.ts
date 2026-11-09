@@ -9,6 +9,7 @@ import { Dependency } from './dependency.js'
 import { createIconSvgImage } from './icon.js'
 import { createInlineCustomSvgImage, createInlineSvgImage } from './inline.js'
 import { createRectSvgImage } from './rect.js'
+import { assertTimeZone, expandSeedVariables } from './seed.js'
 import { ColorTheme, DependencyInterface, SvgImage } from './types.js'
 
 interface ImageParams {
@@ -17,6 +18,7 @@ interface ImageParams {
 
 interface CommonQuery {
   seed: string
+  tz?: string
 }
 
 interface InlineQuery extends CommonQuery {
@@ -40,6 +42,8 @@ interface IconQuery extends CommonQuery {
   width?: string
   height?: string
   circle?: string
+  square?: string
+  radius?: string
 }
 
 // Insert a PNG tEXt chunk (keyword + text) right after the IHDR chunk
@@ -103,11 +107,31 @@ export async function safeReplySvgImageAs(svgImage: SvgImage, format: string, re
   }
 }
 
+class BadRequestError extends Error {}
+
+function resolveSeed(query: CommonQuery, dep: DependencyInterface): string {
+  const timeZone = query.tz || dep.defaults.timeZone
+  try {
+    assertTimeZone(timeZone)
+  } catch {
+    throw new BadRequestError(`Invalid time zone: ${timeZone}`)
+  }
+  return expandSeedVariables(query.seed || dep.defaults.seed, { timeZone })
+}
+
 export function createServer(dep: DependencyInterface) {
   const require = createRequire(import.meta.url)
   const { version } = require('../package.json') as { version: string }
 
   const server = Fastify()
+
+  server.setErrorHandler((err, _request, reply) => {
+    if (err instanceof BadRequestError) {
+      reply.status(400).send({ error: err.message })
+      return
+    }
+    reply.send(err)
+  })
 
   server.addHook('onSend', async (_request, reply) => {
     reply.header('X-App-Version', version)
@@ -115,11 +139,11 @@ export function createServer(dep: DependencyInterface) {
 
   server.get<{ Params: ImageParams; Querystring: InlineQuery }>('/v2/inline.:format', async (request, reply) => {
     const { format } = request.params
-    const { seed, width, colorTheme } = request.query
+    const { width, colorTheme } = request.query
 
     const svgImage = await createInlineSvgImage(
       {
-        seed: seed || dep.defaults.seed,
+        seed: resolveSeed(request.query, dep),
         width: Number(width || dep.inlineDefaults.width),
         colorTheme: colorTheme || dep.logoTextDefaults.colorTheme,
       },
@@ -133,11 +157,11 @@ export function createServer(dep: DependencyInterface) {
     '/v2/inline-custom.:format',
     async (request, reply) => {
       const { format } = request.params
-      const { seed, text, height, colorTheme } = request.query
+      const { text, height, colorTheme } = request.query
 
       const svgImage = await createInlineCustomSvgImage(
         {
-          seed: seed || dep.defaults.seed,
+          seed: resolveSeed(request.query, dep),
           text: text || dep.logoTextDefaults.text,
           height: Number(height || dep.inlineDefaults.width / 4), // Default height based on reasonable ratio
           colorTheme: colorTheme || dep.logoTextDefaults.colorTheme,
@@ -151,11 +175,11 @@ export function createServer(dep: DependencyInterface) {
 
   server.get<{ Params: ImageParams; Querystring: RectQuery }>('/v2/rect.:format', async (request, reply) => {
     const { format } = request.params
-    const { seed, width, height, colorTheme } = request.query
+    const { width, height, colorTheme } = request.query
 
     const svgImage = await createRectSvgImage(
       {
-        seed: seed || dep.defaults.seed,
+        seed: resolveSeed(request.query, dep),
         width: Number(width || dep.rectDefaults.size),
         height: Number(height || width || dep.rectDefaults.size),
         colorTheme: colorTheme || dep.logoTextDefaults.colorTheme,
@@ -168,14 +192,16 @@ export function createServer(dep: DependencyInterface) {
 
   server.get<{ Params: ImageParams; Querystring: IconQuery }>('/v2/icon.:format', async (request, reply) => {
     const { format } = request.params
-    const { seed, width, height, circle } = request.query
+    const { width, height, circle, square, radius } = request.query
 
     const svgImage = await createIconSvgImage(
       {
-        seed: seed || dep.defaults.seed,
+        seed: resolveSeed(request.query, dep),
         width: Number(width || dep.iconDefaults.size),
         height: Number(height || width || dep.iconDefaults.size),
         circle: circle === '1',
+        square: square === '1',
+        radius: Number(radius || 0) || 0,
       },
       dep,
     )

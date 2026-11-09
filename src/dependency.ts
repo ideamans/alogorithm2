@@ -1,5 +1,6 @@
 import Pino from 'pino'
 
+import { assertTimeZone } from './seed.js'
 import {
   Defaults,
   DependencyInterface,
@@ -9,6 +10,18 @@ import {
   MarkDefaults,
   RectDefaults,
 } from './types.js'
+
+// Follow the standard TZ variable; fall back to Asia/Tokyo when unset.
+// A TZ that Intl does not accept as a name (e.g. POSIX "JST-9") falls back to how the runtime resolved it.
+export function resolveDefaultTimeZone(tz: string | undefined): string {
+  if (!tz) return 'Asia/Tokyo'
+  try {
+    assertTimeZone(tz)
+    return tz
+  } catch {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone
+  }
+}
 
 export class Dependency implements DependencyInterface {
   logger: Pino.Logger
@@ -35,6 +48,7 @@ export class Dependency implements DependencyInterface {
 
     this.defaults = {
       seed: process.env.DEFAULT_SEED || 'alogorithm2',
+      timeZone: resolveDefaultTimeZone(process.env.TZ),
       serverPort: Number(process.env.PORT || '3001'),
       serverHost: process.env.HOST || '0.0.0.0',
     }

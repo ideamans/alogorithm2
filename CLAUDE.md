@@ -29,7 +29,9 @@ npm test
 npm run test:lint      # ESLint
 npm run test:prettier  # Prettier format check
 npm run test:cspell    # Spell check
-npm run test:unit      # ava tests (build/spec/*.spec.js, compiled from src/spec/*.spec.ts)
+npm run test:unit      # Unit tests (AVA) with c8 coverage
+npm run golden:update  # Regenerate fixtures/golden/* after an intended output change
+npm run docker:smoke   # Build the production image, run ava inside it, then hit every endpoint
 
 # Watch mode for tests
 npm run watch
@@ -64,7 +66,7 @@ npm run fix:prettier   # Auto-format with Prettier
 - **Server** (`src/server.ts`): Fastify-based HTTP server with three main endpoints:
   - `/v2/inline.{svg|png}` - Horizontal logo with text beside mark
   - `/v2/rect.{svg|png}` - Vertical logo with text below mark  
-  - `/v2/icon.{svg|png}` - Icon-only version
+  - `/v2/icon.{svg|png}` - Icon-only version; `circle=1` clips to a circle, `square=1` to a square with `radius` (ratio of the shorter side, 0–0.5) as corner radius (`applyCircleClipping` / `applySquareClipping` in `svg.ts`)
 
 - **Logo Generation Pipeline**:
   1. `mark.ts` - Creates geometric patterns using Trianglify and clips them with blob shapes
@@ -83,11 +85,19 @@ npm run fix:prettier   # Auto-format with Prettier
 
 ### Configuration
 All defaults are configurable via environment variables:
-- `DEFAULT_SEED`: Pattern seed (default: "alogorithm2")
+- `DEFAULT_SEED`: Pattern seed (default: "alogorithm2"). May contain seed variables
+- `TZ`: Standard time zone variable, also used to expand seed variables (default when unset: "Asia/Tokyo")
 - `PORT`: Server port (default: 3000)
 - `HOST`: Server host (default: "0.0.0.0")
 - `LOGO_TEXT`: Company name text
 - Various styling and layout parameters
+
+### Seed Variables
+`src/seed.ts` expands `{name}` placeholders in the seed before generation (`resolveSeed` in `server.ts`).
+- `{today}` → `YYYYMMDD` in the time zone from the `tz` query param, else `TZ`, else `Asia/Tokyo`
+- Unknown variables are left untouched; an invalid `tz` returns 400
+- The expanded value is what goes into the SVG `<title>` and the PNG `Seed` tEXt chunk
+- To add a variable, add an entry to the `variables` map in `expandSeedVariables`
 
 ### Logo Generation Process
 1. Generate triangular geometric pattern based on seed
@@ -103,13 +113,18 @@ All defaults are configurable via environment variables:
 - Strict TypeScript configuration with comprehensive type checking
 - ESLint with TypeScript rules, import ordering, and sorting
 - Prettier for code formatting
-- Tests use AVA (`ava` config in package.json, `workerThreads: false` because the native `canvas` module pulled in by trianglify cannot be loaded in multiple worker threads)
+- Unit tests: AVA, `src/*.spec.ts`. They run from the compiled `build/**/*.spec.js`, so build first (`npm test` does)
+  - `spec-helper.ts` has `createTestDependency()` (real defaults, silent logger), `svgDigest()` and `findNodes()`
+  - Server tests use Fastify `inject` (no port)
+  - Snapshots in `src/snapshots/` hold SVG digests per seed. They guard "the same seed always draws the same logo";
+    a failure after a dependency upgrade means logos changed. Update only on purpose: `npx ava --update-snapshots`
+- Requires Node 24 (Dockerfile pins `node:24.22.2`). `canvas` is forced to 3.x via `resolutions` because trianglify
+  pulls canvas 2, which does not build on Node 24. Only `toSVG()` is used, so canvas never affects the output
+- Tests also live in `src/spec/` (HTTP over `fastify.inject`, golden files in `fixtures/golden/`: SVG byte-equal,
+  PNG pixel-compared with a small tolerance). AVA runs with `workerThreads: false` because native modules
+  (canvas / sharp) misbehave when loaded in several worker threads
 - Build outputs to `build/` directory
 - Font files stored in `fonts/` directory
+
 ### Dependency notes
-- `resolutions` in package.json forces `**/canvas/@mapbox/node-pre-gyp` to `^2.0.3`. trianglify depends on
-  `canvas@^2`, whose `@mapbox/node-pre-gyp@^1` pulls in the vulnerable `tar@6` (and `rimraf`/`glob@7`/old
-  `brace-expansion`). node-pre-gyp is only used at install time; canvas 2.11.2 has no prebuilt binary for
-  Node 22, so it is always built from source (`--fallback-to-build`, needs the cairo/pango packages in the
-  Dockerfile). Remove the resolution only if trianglify/canvas stop depending on node-pre-gyp 1.x.
 - sharp 0.35 requires Node.js >= 20.9.0. PNG output is pinned by `fixtures/golden/*.png` (pixel compare).

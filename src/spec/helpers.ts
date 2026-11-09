@@ -17,7 +17,7 @@ export const updateGolden = ['1', 'true', 'yes'].includes((process.env.UPDATE_GO
 // (a worker thread) so that unit tests stay hermetic and are not affected by environment variables.
 export function testDependency(): DependencyInterface {
   return {
-    defaults: { seed: 'alogorithm2', serverPort: 3001, serverHost: '127.0.0.1' },
+    defaults: { seed: 'alogorithm2', timeZone: 'UTC', serverPort: 3001, serverHost: '127.0.0.1' },
     logoTextDefaults: {
       text: `ideaman's`,
       fill: '#555',

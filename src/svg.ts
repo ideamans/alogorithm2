@@ -32,39 +32,47 @@ export function scaleSvgPath(svgPath: string, width: number, height: number): st
   return scaled
 }
 
-// --- Circle clipping for icon avatars ---
+// --- Shape clipping for icon avatars ---
 
-function replaceClipPathWithCircle(node: Svgson.INode, cx: number, cy: number, r: number): Svgson.INode {
+function createElement(name: string, attributes: Record<string, number>): Svgson.INode {
+  const attrs: Record<string, string> = {}
+  for (const [key, value] of Object.entries(attributes)) attrs[key] = `${value}`
+  return { name, type: 'element', attributes: attrs, value: '', children: [] }
+}
+
+// Replace the children of every clipPath with the given shape
+function replaceClipPathWith(node: Svgson.INode, shape: Svgson.INode): Svgson.INode {
   const newNode: Svgson.INode = { ...node, attributes: { ...node.attributes } }
 
   if (node.name === 'clipPath') {
-    // Replace clipPath children with a circle
-    newNode.children = [
-      {
-        name: 'circle',
-        type: 'element',
-        attributes: {
-          cx: `${cx}`,
-          cy: `${cy}`,
-          r: `${r}`,
-        },
-        value: '',
-        children: [],
-      },
-    ]
+    newNode.children = [shape]
     return newNode
   }
 
   if (node.children && node.children.length > 0) {
-    newNode.children = node.children.map((child) => replaceClipPathWithCircle(child, cx, cy, r))
+    newNode.children = node.children.map((child) => replaceClipPathWith(child, shape))
   }
 
   return newNode
 }
 
 export function applyCircleClipping(svgNode: Svgson.INode, width: number, height: number): Svgson.INode {
-  const cx = width / 2
-  const cy = height / 2
   const r = Math.min(width, height) / 2
-  return replaceClipPathWithCircle(svgNode, cx, cy, r)
+  return replaceClipPathWith(svgNode, createElement('circle', { cx: width / 2, cy: height / 2, r }))
+}
+
+// Clip to a centered square whose side is the shorter edge.
+// radius is the corner radius as a ratio of the side (0 = sharp corners, 0.5 = circle).
+export function applySquareClipping(svgNode: Svgson.INode, width: number, height: number, radius = 0): Svgson.INode {
+  const size = Math.min(width, height)
+  const r = size * Math.min(Math.max(radius, 0), 0.5)
+  const rect = createElement('rect', {
+    x: (width - size) / 2,
+    y: (height - size) / 2,
+    width: size,
+    height: size,
+    rx: r,
+    ry: r,
+  })
+  return replaceClipPathWith(svgNode, rect)
 }
